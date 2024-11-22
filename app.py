@@ -2,73 +2,82 @@ import constants
 import copy
 
 
-
+# This function cleans the data in the constants file, by creating a deepcopy, correcting data types
 def clean_data():
-    players_copy = copy.deepcopy(constants.PLAYERS)  # read the existing player data from the PLAYERS constants provided in constants.py
-                                                     # cleaning the player data using copy.deepcopy()
-    cleaned_players = []  # creating a new empty list to move our cleaned data into
-    for player in players_copy:  # each dictionary in the list is representing a player
-        fixed = {}  # creating an empty dictionary for each player called fixed, to enter our new formatted into
-        fixed['name'] = player['name']  # moving the "name" keys and values from the old dictionary to the new one unchanged 
-        fixed['guardians'] = ", ".join(player['guardians'].split(" and ")) # adding "guardians" as a list with each guardian as a separate item
+    players_copy = copy.deepcopy(constants.PLAYERS)
+    cleaned_players = []
+    for player in players_copy:
+        fixed = {}
+        fixed['name'] = player['name'] 
+        fixed['guardians'] = ", ".join(player['guardians'].split(" and "))
         if player['experience'] == 'YES':
-            fixed['experience'] = True  # adding key for "experience" and changing the value from a string to a boolean... here True
+            fixed['experience'] = True
         else:
-            fixed['experience'] = False  # ... here False
-        fixed['height'] = int(player['height'].split()[0])  # adding key for "height", values as an integer instead of a string value
-        cleaned_players.append(fixed)  # adding the new dictionaries to the "cleaned_players" list
-    return cleaned_players  # returning the cleaned_players list to be used in other functions
+            fixed['experience'] = False
+        fixed['height'] = int(player['height'].split()[0])
+        cleaned_players.append(fixed)
+    return cleaned_players
 
 
+# This function prints out the title of the app here, so it only prints when the app is run the first time
 def print_header():
-    print("  \U0001F3C0   BASKETBALL  \U0001F3C0""\n  _ TEAM STATS TOOL _ ""\n\n")  # printing out the title of the app here so it doesn't loop
+    print("  \U0001F3C0   BASKETBALL  \U0001F3C0""\n  _ TEAM STATS TOOL _ ""\n\n")
 
 
-def experience_tiers():  # function to help the balance_teams() function assign players to each team with even numbers of experienced and inexperienced players
-    all_players = clean_data()  # getting the cleaned data from the function clean_data()
-    experienced_players = []  # empty list for the experienced
-    inexperienced_players = []  # empty list for the experienced
-    for player in all_players:  # looping through the players assigned to the team and adding them to the appropriate list
+# This function helps the balance_teams() function assign even numbers of experienced and inexperienced players.
+# I separated experienced and inexperienced players into two lists to iterate through.
+def experience_tiers():  
+    all_players = clean_data()
+    experienced_players = []
+    inexperienced_players = []
+    for player in all_players:
         if player['experience'] == True:
             experienced_players.append(player)
         else:
             inexperienced_players.append(player)
-    return experienced_players, inexperienced_players  # returning each list for use in the balance_teams() function
+    return experienced_players, inexperienced_players
 
 
-def balance_teams():  # basically this is like each team taking turns to pick an experienced player until there are none left, and then picking an inexperienced player until all players are picked
-    teams_copy = copy.deepcopy(constants.TEAMS)  # creating a copy of the teams data
-    number_of_teams = len(teams_copy)  #  creating a variable that holds the number of teams (in case the data changes at some point)
-    team_index = 0  # creating a variable that I'll use later to keep track of the index numbers of the teams
-    experienced, inexperienced = experience_tiers()  # utilizing the lists created by the experience_tiers() function
-    balanced_team_rosters = []  # creating an empty list to hold the team rosters
-    for team in teams_copy:  # looping through each team
-        balanced_team_rosters.append([])  # adding an empty list for each team
-    while experienced:  # popping a player off of the experienced list and adding it to a team before moving on to the next until there are no more players in the list
+# This function uses the lists created by the experience_tiers() function. 
+# For each team, it pops a player off of the experienced player list and adds it to the team roster.
+# It loops through the teams until there are no experienced players left in that list.
+# It then does the same for the inexperienced player list.
+def balance_teams():
+    teams_copy = copy.deepcopy(constants.TEAMS)
+    number_of_teams = len(teams_copy)
+    team_index = 0
+    experienced, inexperienced = experience_tiers()
+    balanced_team_rosters = []
+    for team in teams_copy:m
+        balanced_team_rosters.append([])
+    while experienced:
         for player in experienced:
             balanced_team_rosters[team_index].append(experienced.pop(experienced.index(player)))
             team_index += 1
             if team_index == number_of_teams:
                 team_index = 0
-    while inexperienced:  # popping a player off of the inexperienced list and adding it to a team before moving on to the next until there are no more players in the list
+    while inexperienced:
         for player in inexperienced:
             balanced_team_rosters[team_index].append(inexperienced.pop(inexperienced.index(player)))
             team_index += 1
             if team_index == number_of_teams:
                 team_index = 0
-    return balanced_team_rosters  # returns a multi-dimensional list of team rosters
+    return balanced_team_rosters
 
 
-def menu():  # organizing the menu and handling user inputs and exceptions
+# This function organizes the menu and handles user inputs and exceptions.
+# For the first option I hard coded the choices because I don't expect those to change.
+# For the team choice option I wanted to make sure it would still work if more teams are added to the data.
+def menu():  
     teams_copy = copy.deepcopy(constants.TEAMS)
-    team_selection_numbers = []  # creating a list of acceptable inputs to check against in the exception handling
-    team_number = 1  #  starting the team selection options at 1, there are only 3 but in a real-world scenario more could be added later
+    team_selection_numbers = []
+    team_number = 1
     print("    ---- MENU ----\n\n")
     print(" Here are your choices:\n\n  A) Display Team Stats\n  B) Quit")
     while True:
         try:
             menu_options = input("\n\n Enter an option: ")
-            if menu_options.upper() not in ('A', 'B'):  # there are only 2 options in this part of the menu so I hard coded them
+            if menu_options.upper() not in ('A', 'B'):
                 raise ValueError("{} is not a valid input. Please enter either 'A' or 'B'".format(menu_options))
         except ValueError as err:
                 print(f"{err}")
@@ -81,7 +90,7 @@ def menu():  # organizing the menu and handling user inputs and exceptions
                 exit()
     for team in teams_copy:
         team_selection_numbers.append(team_number)
-        print("  {}) {}".format(team_number,team))  # printing the team names with a number to select them. If more teams are added to the data they will display
+        print("  {}) {}".format(team_number,team))
         team_number += 1
     while True:
         try:
@@ -96,11 +105,12 @@ def menu():  # organizing the menu and handling user inputs and exceptions
             break
 
 
-def replay():  # replay function to start the application over at the menu, dealing with any exceptions
+# This function starts the application over at the menu, dealing with any exceptions.
+def replay():
     while True:
         try:
             replay = input("Press ENTER to continue: ")
-            if replay != "":  # we haven't learned about any key presses yet so I just left an empty string so the enter key would trigger
+            if replay != "":  # We haven't learned about any key presses yet so I just left an empty string so the enter key would trigger.
                 raise ValueError("Press ENTER to continue: ")
         except ValueError as err:
                 print(f"{err}")
@@ -110,20 +120,21 @@ def replay():  # replay function to start the application over at the menu, deal
             break
 
 
-def display_stats(team_options):  # Displaying all of the team stats using the oraganized data
-    teams_copy = copy.deepcopy(constants.TEAMS)  # creating a copy of the teams data
-    team_name = teams_copy[(team_options - 1)]  # getting the index of the selected team name in the teams_copy list
-    team_rosters = balance_teams()  # getting the team rosters from the balance_teams() function
-    player_count = len(team_rosters[team_options - 1])  # figuring out the number of players on the team and assigning it the player_count variable
-    team_player_names = [player['name'] for player in team_rosters[(team_options - 1)]]  # assigning a variable to the player name values from the team roster list
-    team_guardian_names = [player['guardians'] for player in team_rosters[(team_options - 1)]]  # assigning a variable to the guardian name values from the team roster list
-    team_heights = [player['height'] for player in team_rosters[(team_options - 1)]]  # assigning a variable to the player height values from the team roster list
-    experienced_player_count = 0  # creating a variable to hold the number of experienced players on the team
-    height_average = round(sum(team_heights) / len(team_heights),1)  # calculating the average height of the players on the team, rounding it to the nearest tenth, and assigning a variable to the value
-    for player in team_rosters[(team_options - 1)]:  # looping through the team roster to find the experienced players to calculate the value held by the experienced_player_count variable
+# This function displays all of the team stats using the oraganized data
+def display_stats(team_options):  
+    teams_copy = copy.deepcopy(constants.TEAMS)
+    team_name = teams_copy[(team_options - 1)]
+    team_rosters = balance_teams()
+    player_count = len(team_rosters[team_options - 1])
+    team_player_names = [player['name'] for player in team_rosters[(team_options - 1)]]
+    team_guardian_names = [player['guardians'] for player in team_rosters[(team_options - 1)]]
+    team_heights = [player['height'] for player in team_rosters[(team_options - 1)]]
+    experienced_player_count = 0
+    height_average = round(sum(team_heights) / len(team_heights),1)
+    for player in team_rosters[(team_options - 1)]:
         if player['experience'] == True:
             experienced_player_count += 1
-    print("Team : {} Stats\n________________\n\n".format(team_name),  # using the variables we created to display all of the stats
+    print("Team : {} Stats\n________________\n\n".format(team_name),
         "Total Players: {}\n".format(player_count),
         "Total Experienced: {}\n".format(experienced_player_count),
         "Total Inexperienced: {}\n".format(player_count - experienced_player_count),
@@ -131,9 +142,10 @@ def display_stats(team_options):  # Displaying all of the team stats using the o
         "\n\nPlayers on Team:  \n" , ", ".join(team_player_names),
         "\n\nGuardians:  \n" , ", ".join(team_guardian_names),
         "\n\n")
-    replay()  # Calling the replay() function to prompt the player to continue or quit
+    replay()
 
 
-if __name__ == "__main__":  # Dunder main, calling the print_header() function to print the header upon starting, then calling the menu() function the first time.
+# Dunder Main
+if __name__ == "__main__":
     print_header()
     menu()
