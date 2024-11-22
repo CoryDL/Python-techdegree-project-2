@@ -48,7 +48,7 @@ def balance_teams():
     team_index = 0
     experienced, inexperienced = experience_tiers()
     balanced_team_rosters = []
-    for team in teams_copy:m
+    for team in teams_copy:
         balanced_team_rosters.append([])
     while experienced:
         for player in experienced:
